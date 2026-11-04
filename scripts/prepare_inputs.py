@@ -33,6 +33,25 @@ from analog_ice.inputs import (  # noqa: E402
 )
 
 
+def xarray_coordinate_check(nc_path: Path, n_time: int, n_y: int,
+                            n_x: int) -> None:
+    """Cross-check the file's coordinate variables with xarray (declared
+    dependency; the flag-accurate raw read itself must use netCDF4 with
+    auto mask/scale disabled)."""
+    import xarray as xr
+
+    with xr.open_dataset(nc_path) as ds:
+        time_size = ds.sizes.get("tdim")
+        y_size = ds.sizes.get("y")
+        x_size = ds.sizes.get("x")
+    if (time_size, y_size, x_size) != (n_time, n_y, n_x):
+        raise ValueError(
+            f"coordinate sizes {(time_size, y_size, x_size)} disagree "
+            f"with the data array {(n_time, n_y, n_x)}")
+    print(f"[prepare] xarray coordinate check: tdim={time_size} "
+          f"y={y_size} x={x_size} OK")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -52,6 +71,7 @@ def main() -> None:
     print(f"[prepare] reading {args.cdr}", flush=True)
     sic, ocean = monthly_sic_from_cdr(args.cdr, args.start_year,
                                       args.n_months)
+    xarray_coordinate_check(args.cdr, sic.shape[2] + 2, *sic.shape[:2])
     lat = latitude_from_cdr(args.cdr)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
