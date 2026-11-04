@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "analog-ice"
+version = "1.0.0"
+description = "Deterministic seasonal sea-ice analog forecasting with trend-corrected transfer"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = [
+    "numpy==1.26.4",
+    "scipy==1.12.0",
+    "netCDF4==1.7.4",
+    "xarray==2025.6.1",
+]
+
+[project.optional-dependencies]
+test = ["pytest==8.3.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

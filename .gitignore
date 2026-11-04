@@ -1,0 +1,12 @@
+# environments / caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# local data and outputs (never commit large data)
+data/
+outputs/
+*.npz
+*.npy
+!tests/fixtures/*.npy

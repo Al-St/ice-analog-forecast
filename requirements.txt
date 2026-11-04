@@ -1,0 +1,8 @@
+# Pinned runtime environment (Python 3.10).
+# numpy/scipy versions are load-bearing for bitwise reproducibility of the
+# PCA-5 decomposition (scipy.linalg.svd, LAPACK dgesdd): do not bump casually.
+numpy==1.26.4
+scipy==1.12.0
+netCDF4==1.7.4
+xarray==2025.6.1
+pytest==8.3.4
