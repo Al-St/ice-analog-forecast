@@ -10,9 +10,12 @@ the reproducibility contract and are unit-tested):
    to 0.0, rescale ``float32(raw) * float32(0.01)``, and store as
    float64 with the month axis last: shape (448, 304, N).
 
-2. Ocean mask: a cell is land iff the CDR land flag (raw == 254) is set;
-   the flag field is static across the record. Ocean = not land
-   (72,485 ocean cells on the 448 x 304 grid).
+2. Ocean mask: a cell is land iff the CDR land flag (raw == 254) is set.
+   The land-flag set is not perfectly static: three months of the record
+   flag parts of the land as missing instead, so the mask is read from
+   the LAST month of the record (its 254 set is the superset covering
+   every other month). Ocean = not land (72,485 ocean cells on the
+   448 x 304 grid).
 
 The regional predictor series (18 NSIDC sea-ice regions) and the
 pan-Arctic extent series built from them live in :mod:`analog_ice.regions`.
@@ -84,6 +87,8 @@ def monthly_sic_from_cdr(nc_path: Path,
     conc[window > FLAG_CUTOFF] = np.float32(0.0)
     sic = np.moveaxis(conc.astype(np.float64), 0, -1)
 
+    # Land flag of the LAST month: its 254 set is the superset of every
+    # other month's (three months flag parts of the land as missing).
     land = window[-1] == LAND_FLAG
     ocean = ~land
     return sic, ocean

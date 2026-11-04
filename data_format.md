@@ -21,8 +21,11 @@ CDR monthly file.
 
 - shape `(448, 304)`, bool, True = ocean;
 - 72,485 ocean cells of 136,192;
-- provenance: NOT (CDR land flag, raw == 254) of any slice (the flag
-  field is static across the record).
+- provenance: NOT (CDR land flag, raw == 254) read from the LAST month
+  of the record. The land-flag set is not perfectly static — three
+  months of the record flag parts of the land as missing instead of
+  land (481 cells; verified over all 542 months) — and the last month's
+  set is the superset covering every other month.
 
 ## Latitude `latitude.npy`
 
