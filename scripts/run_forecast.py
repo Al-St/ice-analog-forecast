@@ -9,9 +9,16 @@ Arms:
       region raster, see data_format.md).
 
 Lead scales:
-  --scale 1        monthly leads 1..6 (default), targets 2016-01..2023-12;
-  --scale seasonal same-month interannual trajectories, leads 12/24/36,
-                   issues 2016-01..2020-12 (regional-arm features).
+  --scale 1           monthly leads 1..6 (default), targets 2016-01..
+                      2023-12;
+  --scale seasonal    same-month interannual trajectories, leads 12/24/36,
+                      issues 2016-01..2020-12 (regional-arm features).
+                      This is the paper's "interannual scale" (main.tex
+                      sec:method:scale2, campaign arm h); the CLI keeps
+                      the historical name "seasonal" so stored run
+                      directories and SHAs stay valid, and accepts
+                      "interannual" as an exact alias (canonicalized to
+                      "seasonal", so metadata and outputs are identical).
 
 Pool length: --base-years L restricts the candidate pool to the trailing
 12*L months (0 = full record base).
@@ -54,6 +61,22 @@ ARMS = {
     "b": {"mode": "m3", "pca": "pca5", "needs_regions": True},
 }
 
+# CLI spellings for the 12/24/36-month scale.  "seasonal" is the
+# canonical value (historical: stored run dirs, metadata.json, SHAs);
+# "interannual" is the manuscript's term (main.tex sec:method:scale2)
+# and is accepted as an exact alias, canonicalized to "seasonal" so a
+# run produces byte-identical metadata and predictions either way.
+SCALE_CHOICES = ("1", "seasonal", "interannual")
+SCALE_ALIASES = {"interannual": "seasonal"}
+
+
+def canonical_scale(value: str) -> str:
+    """Map a --scale CLI value to its canonical spelling."""
+    if value not in SCALE_CHOICES:
+        raise ValueError(f"unknown scale {value!r}; expected one of "
+                         f"{SCALE_CHOICES}")
+    return SCALE_ALIASES.get(value, value)
+
 
 def month_range(calendar: MonthCalendar, start: tuple[int, int],
                 end: tuple[int, int]) -> list[int]:
@@ -71,7 +94,9 @@ def main() -> None:
     ap.add_argument("--arm", choices=sorted(ARMS), default="a")
     ap.add_argument("--base-years", type=int, default=0,
                     help="candidate pool length limit in years (0 = full)")
-    ap.add_argument("--scale", choices=("1", "seasonal"), default="1")
+    ap.add_argument("--scale", choices=SCALE_CHOICES, default="1",
+                    help="1 = monthly leads 1..6; seasonal (= interannual, "
+                         "the paper's term) = leads 12/24/36")
     ap.add_argument("--analogs", type=int, default=5)
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--sic", type=Path, default=None)
@@ -79,6 +104,7 @@ def main() -> None:
     ap.add_argument("--regions", type=Path, default=None)
     ap.add_argument("--no-metrics", action="store_true")
     args = ap.parse_args()
+    args.scale = canonical_scale(args.scale)
 
     cfg = ARMS[args.arm]
     sic_path = args.sic or (args.work / "sic_monthly.npy")

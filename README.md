@@ -24,6 +24,25 @@ random numbers, one entry point per run.
 5. A multi-season scale reuses the same machinery on same-month
    interannual trajectories (leads 12/24/36, the "+1 year" shift).
 
+## Terminology
+
+The manuscript and this repository name the two lead scales
+differently; the mapping is one-to-one:
+
+| this repository | manuscript (`main.tex`) | campaign arm |
+|---|---|---|
+| scale 1 (`--scale 1`), monthly leads 1..6 | the monthly scale | arms a, b and their ablations |
+| "seasonal" / "multi-season" scale (`--scale seasonal`), leads 12/24/36 | the **interannual scale** (§ "The interannual scale: 12--36-month horizons", `\label{sec:method:scale2}`) | arm h |
+
+The CLI value stays `seasonal` so stored run directories,
+`metadata.json` records and SHA-256 digests remain valid;
+`--scale interannual` is accepted as an exact alias and canonicalized
+to `seasonal`, producing byte-identical metadata and predictions either
+way. In this repository "seasonal" never refers to a within-year
+seasonal cycle: candidates always come from a same-calendar-month pool,
+and the name only distinguishes the 12/24/36-month interannual scheme
+from the monthly leads 1..6.
+
 ## Installation
 
 Python 3.10 and:
@@ -64,8 +83,8 @@ python scripts/run_forecast.py --work <data dir> --arm b --base-years 10 \
     --out outputs/arm_b_L10
 ```
 
-Multi-season scale (leads 12/24/36, issues 2016-01..2020-12, regional
-features):
+Interannual scale (= `seasonal` in the CLI; leads 12/24/36, issues
+2016-01..2020-12, regional features; see Terminology above):
 
 ```
 python scripts/run_forecast.py --work <data dir> --arm b --scale seasonal \
@@ -106,7 +125,7 @@ SHA-256) from a clean environment:
 | arm a, full base | 0.025759 | 0.090791 | 1.198854 | 0.651443 |
 | arm b, full base | 0.026268 | 0.089500 | 1.292196 | 0.660041 |
 | arm b, 10-year base | 0.025114 | 0.088752 | 1.171128 | 0.665064 |
-| seasonal (12/24/36) | 0.027123 | 0.092128 | 1.331038 | 0.691280 |
+| seasonal 12/24/36 (= paper's "interannual") | 0.027123 | 0.092128 | 1.331038 | 0.691280 |
 
 Unit tests (46) cover the calendar/anchor map, freshness weights, the
 same-month pool, causal climatology and PCA, trend slopes, the
